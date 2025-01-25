@@ -4,11 +4,22 @@ import requests
 from urllib.parse import urlparse
 import re
 import json
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
 app = FastAPI()
 
 class DataRequest(BaseModel):
     data: str
+
+# Load API keys from environment variables
+ZETTA_API_KEY = os.getenv("ZETTA_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+if not ZETTA_API_KEY or not OPENAI_API_KEY:
+    raise ValueError("API keys are not set in the environment variables.")
 
 # Load JSON data from a file
 file_path = "data.json"
@@ -73,9 +84,8 @@ async def process(data_request: DataRequest):
 
     # Define the API endpoint and headers
     API_ENDPOINT_TEXT = "https://app.trustservista.com/api/rest/v2/text"
-    API_KEY = "f6861bb87cc6c71f90b436fc94515651"  # Replace with your actual API key
     HEADERS = {
-        "X-TRUS-API-Key": API_KEY,
+        "X-TRUS-API-Key": ZETTA_API_KEY,
         "Content-Type": "application/json",
         "Accept": "application/json",
         "Cache-Control": "no-cache"
