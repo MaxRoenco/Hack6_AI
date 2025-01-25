@@ -19,6 +19,7 @@ const getBiasColor = (severity: number) => {
 };
 
 export const BiasAnalysisResults: React.FC<BiasAnalysisResultsProps> = ({ analysisResult }) => (
+  <>
   <Card>
     <CardHeader>
       <CardTitle className="flex items-center">
@@ -60,4 +61,5 @@ export const BiasAnalysisResults: React.FC<BiasAnalysisResultsProps> = ({ analys
       </div>
     </CardContent>
   </Card>
+  </>
 );
