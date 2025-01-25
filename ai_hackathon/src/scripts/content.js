@@ -1,84 +1,115 @@
 function createCognitiveBiasNotification(bias, sentence) {
-  // Create notification container
   const notification = document.createElement('div');
-  notification.className = `
-    fixed right-4 top-4 z-[1000] w-96 bg-white 
-    border border-gray-200 rounded-lg shadow-lg 
-    transform transition-all duration-300 ease-in-out 
-    translate-x-0 opacity-100 p-4
+  notification.style.cssText = `
+    position: fixed;
+    right: -400px;  /* Start off-screen */
+    top: 16px;
+    z-index: 99999;
+    width: 380px;
+    background: linear-gradient(135deg, #ffffff, #f4f4f4);
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    padding: 20px;
+    transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   `;
 
-  // Notification content
   notification.innerHTML = `
-    <div class="flex justify-between items-start mb-3">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
       <div>
-        <h3 class="text-lg font-semibold text-red-600">Cognitive Bias Detected!</h3>
-        <p class="text-sm text-gray-600 mt-1">${bias}</p>
+        <h3 style="color: #ff4d4f; font-size: 18px; margin: 0; font-weight: 600;">Cognitive Bias Detected</h3>
+        <p style="color: #667085; font-size: 14px; margin-top: 5px;">${bias}</p>
       </div>
-      <button id="close-notification" class="text-gray-400 hover:text-gray-600">✕</button>
+      <button id="close-btn" style="
+        background: none; 
+        border: none; 
+        color: #667085; 
+        font-size: 20px; 
+        cursor: pointer; 
+        padding: 0;
+        transition: transform 0.2s;
+      ">✕</button>
     </div>
     
-    <div class="mb-3">
-      <p class="text-sm text-gray-700 italic">"${sentence}"</p>
+    <div style="
+      background: #f9fafb; 
+      padding: 12px; 
+      border-radius: 8px; 
+      margin-bottom: 15px;
+      border: 1px solid #e9ecef;
+      font-style: italic;
+      color: #333;
+    ">
+      "${sentence}"
     </div>
     
-    <div class="flex justify-end">
-      <button id="expand-details" class="
-        text-sm text-blue-600 hover:text-blue-800 
-        transition-colors font-medium
-      ">
-        Explain Bias
-      </button>
-    </div>
+    <button id="expand-btn" style="
+      width: 100%; 
+      background: #f0f2f5; 
+      border: 1px solid #e9ecef;
+      padding: 10px; 
+      border-radius: 8px; 
+      color: #333; 
+      font-weight: 500; 
+      cursor: pointer;
+      transition: all 0.2s;
+    ">
+      Learn More About This Bias
+    </button>
     
-    <div id="bias-details" class="hidden mt-3 pt-3 border-t border-gray-200">
-      <p class="text-sm text-gray-700"></p>
-    </div>
+    <div id="details" style="display: none; margin-top: 15px; color: #667085; font-size: 14px;"></div>
   `;
 
-  // Bias database (expand as needed)
   const biasDetails = {
-    'Confirmation Bias': 'The tendency to search for, interpret, and favor information that confirms existing beliefs.',
-    'Anchoring Bias': 'Relying too heavily on the first piece of information encountered when making decisions.',
-    'Availability Heuristic': 'Overestimating the likelihood of events based on how easily examples come to mind.'
+    'Confirmation Bias': 'You unconsciously seek information that confirms existing beliefs, while dismissing contradictory evidence.',
+    'Anchoring Bias': 'Your first piece of information dramatically influences subsequent decisions, creating a psychological anchor.',
+    'Availability Heuristic': 'Recent or memorable events disproportionately influence your risk assessment and judgment.'
   };
 
-  // Close button functionality
-  const closeButton = notification.querySelector('#close-notification');
-  closeButton.addEventListener('click', () => {
-    notification.classList.add('translate-x-full', 'opacity-0');
-    setTimeout(() => document.body.removeChild(notification), 300);
+  const closeBtn = notification.querySelector('#close-btn');
+  const expandBtn = notification.querySelector('#expand-btn');
+  const detailsDiv = notification.querySelector('#details');
+
+  // Sliding in animation
+  setTimeout(() => {
+    notification.style.right = '16px';
+  }, 50);
+
+  closeBtn.addEventListener('click', () => {
+    notification.style.right = '-400px';
+    setTimeout(() => document.body.removeChild(notification), 400);
   });
 
-  // Expand details functionality
-  const expandButton = notification.querySelector('#expand-details');
-  const detailsContainer = notification.querySelector('#bias-details');
-  const detailsText = detailsContainer.querySelector('p');
-
-  expandButton.addEventListener('click', () => {
-    if (detailsContainer.classList.contains('hidden')) {
-      detailsText.textContent = biasDetails[bias] || 'No detailed explanation available.';
-      detailsContainer.classList.remove('hidden');
-      expandButton.textContent = 'Hide Details';
+  expandBtn.addEventListener('click', () => {
+    if (detailsDiv.style.display === 'none') {
+      detailsDiv.textContent = biasDetails[bias] || 'No details available.';
+      detailsDiv.style.display = 'block';
+      expandBtn.textContent = 'Hide Details';
+      expandBtn.style.backgroundColor = '#e9ecef';
     } else {
-      detailsContainer.classList.add('hidden');
-      expandButton.textContent = 'Explain Bias';
+      detailsDiv.style.display = 'none';
+      expandBtn.textContent = 'Learn More About This Bias';
+      expandBtn.style.backgroundColor = '#f0f2f5';
     }
   });
 
-  // Add to document
+  closeBtn.addEventListener('mouseover', (e) => {
+    e.target.style.transform = 'rotate(90deg)';
+  });
+
+  closeBtn.addEventListener('mouseout', (e) => {
+    e.target.style.transform = 'rotate(0deg)';
+  });
+
   document.body.appendChild(notification);
 }
 
-// Chrome extension message listener
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'showExtension') {
-    const biases = [
-      'Confirmation Bias', 
-      'Anchoring Bias', 
-      'Availability Heuristic'
-    ];
 
+  if (request.action === 'showExtension') {
+    console.log("HMM");
+    const biases = ['Confirmation Bias', 'Anchoring Bias', 'Availability Heuristic'];
     const randomBias = biases[Math.floor(Math.random() * biases.length)];
     createCognitiveBiasNotification(
       randomBias, 
