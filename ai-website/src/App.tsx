@@ -4,6 +4,7 @@ import MainPage from './pages/MainPage';
 import BiasResultsPage from './pages/BiasResultsPage';
 import Header from './components/Header'
 import SettingsPage from './components/SettingsPage';
+import BiasLearning from './pages/BiasLearning';
 
 const App: React.FC = () => {
   return (
@@ -12,6 +13,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<MainPage/>} />
         <Route path="/results" element={<BiasResultsPage />} />
+        <Route path="/learning" element={<BiasLearning />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </Router>
