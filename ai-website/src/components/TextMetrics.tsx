@@ -1,7 +1,11 @@
 import React from 'react';
-import { FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { 
+  BookOpen, 
+  FileText, 
+  Clock, 
+  BarChart2 
+} from 'lucide-react';
 
 interface TextMetricsProps {
   metrics: {
@@ -12,33 +16,54 @@ interface TextMetricsProps {
   };
 }
 
-export const TextMetrics: React.FC<TextMetricsProps> = ({ metrics }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="flex items-center">
-        <FileText className="mr-2 h-5 w-5" />
-        Text Metrics
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-2">
-        <div className="flex justify-between">
-          <span>Words:</span>
-          <Badge variant="secondary">{metrics.wordCount}</Badge>
+const TextMetrics: React.FC<TextMetricsProps> = ({ metrics }) => {
+  const metricItems = [
+    {
+      icon: <FileText className="h-5 w-5 text-blue-500" />,
+      label: 'Word Count',
+      value: metrics.wordCount
+    },
+    {
+      icon: <BookOpen className="h-5 w-5 text-green-500" />,
+      label: 'Characters',
+      value: metrics.charCount
+    },
+    {
+      icon: <Clock className="h-5 w-5 text-purple-500" />,
+      label: 'Reading Time',
+      value: `${metrics.readingTime} min`
+    },
+    {
+      icon: <BarChart2 className="h-5 w-5 text-orange-500" />,
+      label: 'Complexity',
+      value: metrics.complexity
+    }
+  ];
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <BookOpen className="mr-2 h-6 w-6" />
+          Text Metrics
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {metricItems.map((item, index) => (
+            <div 
+              key={index} 
+              className="flex flex-col items-center p-3 bg-gray-50 rounded-lg"
+            >
+              {item.icon}
+              <span className="text-sm text-gray-600 mt-2">{item.label}</span>
+              <span className="font-bold text-lg">{item.value}</span>
+            </div>
+          ))}
         </div>
-        <div className="flex justify-between">
-          <span>Characters:</span>
-          <Badge variant="secondary">{metrics.charCount}</Badge>
-        </div>
-        <div className="flex justify-between">
-          <span>Reading Time:</span>
-          <Badge variant="secondary">{metrics.readingTime} min</Badge>
-        </div>
-        <div className="flex justify-between">
-          <span>Complexity:</span>
-          <Badge variant="outline">{metrics.complexity}</Badge>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
+      </CardContent>
+    </Card>
+  );
+};
+
+export default TextMetrics;
