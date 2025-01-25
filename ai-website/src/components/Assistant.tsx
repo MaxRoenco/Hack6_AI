@@ -1,9 +1,37 @@
-import { useGLTF } from '@react-three/drei'
+import { useAnimations, useFBX, useGLTF } from '@react-three/drei'
+import { useEffect, useRef } from 'react'
 
-export default function Assistant(props : any) {
+export default function Assistant({ animationName = 'salute', ...props }) {
+  const group = useRef();
   const { nodes, materials } = useGLTF('/model/Assistant.glb')
+
+  const { animations: idleAnimation } = useFBX('animations/idle.fbx')
+  const { animations: saluteAnimation } = useFBX('animations/salute.fbx')
+  const { animations: victoryAnimation } = useFBX('animations/victory.fbx')
+  const { animations: clappingAnimation } = useFBX('animations/clapping.fbx')
+
+  idleAnimation[0].name = 'idle';
+  saluteAnimation[0].name = 'salute';
+  clappingAnimation[0].name = 'clapping';
+  victoryAnimation[0].name = 'victory';
+
+  const { actions } = useAnimations([idleAnimation[0], saluteAnimation[0], clappingAnimation[0], victoryAnimation[0]], group);
+
+  useEffect(() => {
+      if (actions[animationName]) {
+          actions[animationName].reset().fadeIn(0.5).play();
+      }
+      return () => {
+          if (actions[animationName]) {
+              actions[animationName].fadeOut(0.5);
+          }
+      };
+  }, [animationName, actions]);
+  
+
+
   return (
-    <group {...props} dispose={null}>
+    <group {...props} dispose={null} ref={group}>
       <primitive object={nodes.Hips} />
       <skinnedMesh
         name="EyeLeft"

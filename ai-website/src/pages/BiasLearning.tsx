@@ -7,6 +7,7 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import Assistant from '../components/Assistant'
 import CanvasLoader from '@/components/CanvasLoader';
+import CognitiveAssistant from '@/components/CognitiveAssistant';
 
 interface CognitiveBias {
   type: string;
@@ -61,6 +62,7 @@ const cognitiveBlasses: CognitiveBias[] = [
 const BiasLearning: React.FC = () => {
   const [selectedBias, setSelectedBias] = useState<CognitiveBias | null>(null);
   const [openBiasIndex, setOpenBiasIndex] = useState<number | null>(null);
+  const [animationName, setAnimationName] = useState<string>('salute');
 
   const getBadgeColor = (impact: CognitiveBias['impact']): string => {
     switch(impact) {
@@ -162,22 +164,28 @@ const BiasLearning: React.FC = () => {
           </Card>
         </div>
       </div>
-      <div className="w-[400px] h-[600px] fixed top-[150px] right-0">
+      <div className="w-[400px] h-[600px] fixed top-[100px] right-0">
         <Canvas className='w-full h-full'>
-          <ambientLight intensity={4} />
+          <ambientLight intensity={6} />
           <spotLight
               position={[10, 10, 10]}
               angle={0.15}
               penumbra={1}
-              intensity={2} />
-          <directionalLight position={[10, 10, 10]} intensity={4} />
-          <OrbitControls enableZoom={false} maxPolarAngle={Math.PI / 2} />
+              intensity={6} />
+          <directionalLight position={[-3, -3, 10]} intensity={3} />
+          <OrbitControls enableZoom={false} enableRotate={false} maxPolarAngle={Math.PI / 2} />
           <Suspense fallback={<CanvasLoader />}>
-              <Assistant position={[0, -3, 0]} scale={3}
-              //  animationName={animationName} 
+              <Assistant  position={[0, -3, 0]} scale={3} rotation={[0.3, -0.2, 0]}
+               animationName={animationName} 
               />
           </Suspense>
         </Canvas>
+        <div className="fixed bottom-2 right-2 z-10">
+          <CognitiveAssistant 
+            onAnimationChange={(newAnimation) => setAnimationName(newAnimation)}
+            selectedBias={selectedBias}
+          />
+        </div>
       </div>
     </div>
   );
