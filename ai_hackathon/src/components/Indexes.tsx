@@ -2,7 +2,7 @@
 
 const Indexes = () => {
   return (
-    <div>Indexes</div>
+    <div>Indexes blblbl</div>
   )
 }
 
