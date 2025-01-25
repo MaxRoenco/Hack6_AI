@@ -25,7 +25,7 @@ const Header = () => {
     },
     { 
       label: 'Settings', 
-      href: '/settings', 
+      href: './settings', 
       icon: <Settings className="mr-2 h-4 w-4" /> 
     }
   ];
