@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import BiasAnalysisSection from '@/components/BiasAnalysisSection';
 
 // Bias color and description mapping
 const BIAS_DETAILS = {
@@ -22,6 +24,7 @@ const BIAS_DETAILS = {
 const BiasResultsPage: React.FC = () => {
   const location = useLocation();
   const { text, analysisResult } = location.state || {};
+  const [neutralizedSentences, setNeutralizedSentences] = useState<Set<number>>(new Set());
 
   // Function to highlight sentences with hover card
   const highlightText = () => {
@@ -31,6 +34,11 @@ const BiasResultsPage: React.FC = () => {
     const sentences = text.split(/[.!?]+/).filter((sentence: string) => sentence.trim());
 
     return sentences.map((sentence: string, index: number) => {
+      // Check if this sentence has been neutralized
+      if (neutralizedSentences.has(index)) {
+        return <span key={index} className="mr-1">NEUTRALIZED</span>;
+      }
+
       // Randomly decide whether to highlight this sentence
       const shouldHighlight = Math.random() > 0.5;
       
@@ -61,12 +69,21 @@ const BiasResultsPage: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     {biasDetail.description}
                   </p>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between mb-2">
                     <span>Severity:</span>
                     <span className="font-bold">
                       {(randomBias.severity * 100).toFixed(0)}%
                     </span>
                   </div>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    onClick={() => {
+                      setNeutralizedSentences(prev => new Set(prev).add(index));
+                    }}
+                  >
+                    Neutralize
+                  </Button>
                 </CardContent>
               </Card>
             </HoverCardContent>
@@ -87,23 +104,11 @@ const BiasResultsPage: React.FC = () => {
           {highlightText()}
         </div>
       </div>
-
+        <br />
       {analysisResult && (
-        <div className="mt-8 bg-gray-50 p-4 rounded-lg">
-          <h2 className="text-2xl font-semibold mb-4">Analysis Summary</h2>
-          <p>Overall Bias Score: {analysisResult.overallBiasScore.toFixed(2)}</p>
-          <div className="mt-4">
-            <h3 className="font-bold">Detected Bias Types:</h3>
-            <ul className="list-disc pl-5">
-              {analysisResult.biasTypes.map((bias: any, index: number) => (
-                <li key={index}>
-                  {bias.name} - Severity: {(bias.severity * 100).toFixed(0)}%
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <BiasAnalysisSection analysisResult={analysisResult} />
       )}
+      
     </div>
   );
 };
