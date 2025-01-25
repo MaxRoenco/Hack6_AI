@@ -1,47 +1,39 @@
 import requests
-
-# Replace these with your Azure details
-endpoint = "https://biasextractor.cognitiveservices.azure.com/"
-api_key = "6FLKSLUndDTBj9YzJ06ks21pTI02HT0qzF9qLkKc30fZBeUMEpD0JQQJ99BAACPV0roXJ3w3AAAaACOG4j69"
+import re
 
 
-# Function to classify text
-def classify_text(sentence):
-    headers = {
-        "Ocp-Apim-Subscription-Key": api_key,
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "kind": "CustomSingleLabelClassification",
-        "parameters": {
-            "projectName": "YourProjectName",  # Replace with your project name
-            "deploymentName": "YourDeploymentName",  # Replace with your deployment name
-            "stringIndexType": "TextElement_V8"
-        },
-        "analysisInput": {
-            "documents": [
-                {"id": "1", "text": sentence}
-            ]
-        }
-    }
-
-    # Send POST request to Azure API
-    response = requests.post(endpoint, headers=headers, json=payload)
-
-    # Check if the request was successful
-    if response.status_code == 200:
-        result = response.json()
-        classification = result["classifications"][0]
-        confidence = classification["confidenceScore"]
-        category = classification["category"]
-        return f"{confidence:.5f} : {category} : {sentence}"
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
-        return None
+def get_score(sentence):
+    return [0.0, 0.0, 0.0, 0.0, 0.0]
 
 
-# Test the function
-sentence = "Experts say this is the best method for success."
-result = classify_text(sentence)
-if result:
-    print(result)
+raw_article = "Hegseth, a former Fox News host and author who served in the Army National Guard and deployed to Iraq and Afghanistan, was an unconventional and controversial pick to lead the Pentagon. He faced criticism for comments he made about the role of women in combat and the military’s diversity initiatives. He’s also been accused of sexual assault, financial mismanagement and excessive alcohol use — allegations which he’s denied. Some lawmakers also questioned his ability to lead an organization as massive as the Defense Department.\nAdvancing the DOD’s arsenal of AI and uncrewed platforms was also a top military modernization priority for the Biden administration. The Trump administration seems poised to accelerate that push."
+
+
+def splitter(raw_article):
+    article = []
+    for paragraph in raw_article.split('\n'):
+        sentences =[]
+        for sentence in re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s', paragraph):
+            score = get_score(sentence)
+            sentences.append({"text": sentence, "score": score})
+
+        article.append({"sentences": sentences, "text": paragraph})
+
+        return article
+
+
+article = splitter(raw_article)
+print(article[0].get('sentences')[0].get('score')[1])
+
+
+
+
+
+
+
+
+
+
+
+
+
