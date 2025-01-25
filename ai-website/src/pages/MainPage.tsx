@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { InputSection } from '@/components/InputSection';
-import { TextMetrics } from '@/components/TextMetrics';
+import TextMetrics from '@/components/TextMetrics';
 import { BiasAnalysisResults } from '@/components/BiasAnalysisResults';
+import { useNavigate } from 'react-router-dom';
 
 // Mock bias detection service (replace with actual API)
 const detectBiases = async (input: string, isUrl: boolean) => {
@@ -27,11 +28,13 @@ const MainPage: React.FC = () => {
     const wordCount = input.trim().split(/\s+/).filter(Boolean).length;
     const charCount = input.length;
     const readingTime = Math.ceil(wordCount / 200);
-    const complexity = wordCount > 500 ? 'Complex' : 
-                       wordCount > 200 ? 'Moderate' : 'Simple';
+    const complexity = wordCount > 500 ? 'Complex' :
+      wordCount > 200 ? 'Moderate' : 'Simple';
 
     return { wordCount, charCount, readingTime, complexity };
   }, [input]);
+
+  const navigate = useNavigate();
 
   const handleAnalyze = async () => {
     if (!input) return;
@@ -39,7 +42,13 @@ const MainPage: React.FC = () => {
     setIsLoading(true);
     try {
       const result = await detectBiases(input, inputType === 'url');
-      setAnalysisResult(result);
+      // Navigate to results page with text and analysis data
+      navigate('/results', {
+        state: {
+          text: input,
+          analysisResult: result
+        }
+      });
     } catch (error) {
       console.error('Analysis failed', error);
     } finally {
@@ -64,7 +73,7 @@ const MainPage: React.FC = () => {
         />
 
         {input && (
-          <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="mt-4">
             <TextMetrics metrics={textMetrics} />
           </div>
         )}
