@@ -173,7 +173,7 @@ const BiasLearning: React.FC = () => {
               penumbra={1}
               intensity={6} />
           <directionalLight position={[-3, -3, 10]} intensity={3} />
-          <OrbitControls enableZoom={false} enableRotate={false} maxPolarAngle={Math.PI / 2} />
+          <OrbitControls enableZoom={false} enableRotate={false} enablePan={false} maxPolarAngle={Math.PI / 2} />
           <Suspense fallback={<CanvasLoader />}>
               <Assistant  position={[0, -3, 0]} scale={3} rotation={[0.3, -0.2, 0]}
                animationName={animationName} 
