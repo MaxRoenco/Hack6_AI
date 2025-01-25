@@ -1,170 +1,89 @@
-import React, { useState } from 'react';
-import { ChartPie, AlertTriangle, Link, Globe } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { CheckCircle } from 'lucide-react';
+import { InputSection } from './components/InputSection';
+import { TextMetrics } from './components/TextMetrics';
+import { BiasAnalysisResults } from './components/BiasAnalysisResults';
 
-// Color palette
-const COLORS = {
-  darkBlue: '#2E5266',
-  mediumBlue: '#6E8898',
-  lightBlue: '#9FB1CF',
-  neutral: '#D3D0CB'
+// Mock bias detection service (replace with actual API)
+const detectBiases = async (input: string, isUrl: boolean) => {
+  return {
+    overallBiasScore: 0.65,
+    biasTypes: [
+      { name: 'Confirmation Bias', severity: 0.8 },
+      { name: 'Anchoring Bias', severity: 0.4 },
+      { name: 'Availability Heuristic', severity: 0.6 }
+    ]
+  };
 };
 
-  return (
-    <>
-      <div className='bg-slate-600'>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+const App: React.FC = () => {
+  const [input, setInput] = useState('');
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [inputType, setInputType] = useState<'url' | 'text'>('url');
+  const [isLoading, setIsLoading] = useState(false);
 
-interface AnalysisResults {
-  confirmedBiases: Bias[];
-  overallBiasScore: number;
-}
+  // Text analysis metrics
+  const textMetrics = useMemo(() => {
+    const wordCount = input.trim().split(/\s+/).filter(Boolean).length;
+    const charCount = input.length;
+    const readingTime = Math.ceil(wordCount / 200);
+    const complexity = wordCount > 500 ? 'Complex' : 
+                       wordCount > 200 ? 'Moderate' : 'Simple';
 
-const CognitiveBiasAnalyzer: React.FC = () => {
-  const [url, setUrl] = useState<string>('');
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResults | null>(null);
-  const [globalBiasIndex] = useState<number>(65);
+    return { wordCount, charCount, readingTime, complexity };
+  }, [input]);
 
-  const performBiasAnalysis = async () => {
+  const handleAnalyze = async () => {
+    if (!input) return;
+
+    setIsLoading(true);
     try {
-      const mockResults: AnalysisResults = {
-        confirmedBiases: [
-          { name: 'Confirmation Bias', severity: 'High' },
-          { name: 'Negativity Bias', severity: 'Medium' }
-        ],
-        overallBiasScore: 0.72
-      };
-      setAnalysisResults(mockResults);
+      const result = await detectBiases(input, inputType === 'url');
+      setAnalysisResult(result);
     } catch (error) {
-      console.error('Bias analysis failed', error);
+      console.error('Analysis failed', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const button = e.currentTarget;
-    button.style.backgroundColor = COLORS.mediumBlue;
-  };
-
-  const handleMouseOut = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const button = e.currentTarget;
-    button.style.backgroundColor = COLORS.darkBlue;
-  };
-
   return (
-    <div className="min-h-screen bg-gray-100 p-8" style={{ backgroundColor: COLORS.neutral }}>
-      <div className="container mx-auto max-w-4xl bg-white shadow-2xl rounded-xl p-8" style={{ backgroundColor: COLORS.lightBlue }}>
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4" style={{ color: COLORS.darkBlue }}>
-            Cognitive Bias Analyzer
-          </h1>
-          <p className="text-lg" style={{ color: COLORS.mediumBlue }}>
-            Unveil hidden biases in news and media
-          </p>
-        </header>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
+          Cognitive Bias Analyzer
+        </h1>
 
-        <div className="flex items-center mb-8">
-          <input 
-            type="text" 
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="Enter news article URL"
-            className="flex-grow p-3 border-2 rounded-l-lg"
-            style={{ 
-              borderColor: COLORS.darkBlue,
-              backgroundColor: COLORS.neutral
-            }}
-          />
-          <button 
-            onClick={performBiasAnalysis}
-            className="p-3 rounded-r-lg text-white font-bold"
-            style={{ 
-              backgroundColor: COLORS.darkBlue,
-              transition: 'background-color 0.3s ease'
-            }}
-            onMouseOver={handleMouseOver}
-            onMouseOut={handleMouseOut}
-          >
-            <Link size={24} />
-          </button>
-        </div>
+        <InputSection
+          input={input}
+          inputType={inputType}
+          isLoading={isLoading}
+          setInput={setInput}
+          setInputType={setInputType}
+          handleAnalyze={handleAnalyze}
+        />
 
-        {analysisResults && (
-          <div className="grid grid-cols-2 gap-6">
-            <div 
-              className="p-6 rounded-lg shadow-md"
-              style={{ backgroundColor: COLORS.neutral }}
-            >
-              <h2 className="text-2xl font-semibold mb-4" style={{ color: COLORS.darkBlue }}>
-                <AlertTriangle className="inline mr-2" /> Detected Biases
-              </h2>
-              {analysisResults.confirmedBiases.map((bias, index) => (
-                <div 
-                  key={index} 
-                  className="mb-3 p-3 rounded-md"
-                  style={{ 
-                    backgroundColor: bias.severity === 'High' ? 'rgba(255, 0, 0, 0.1)' : 'rgba(255, 165, 0, 0.1)',
-                    color: COLORS.darkBlue 
-                  }}
-                >
-                  {bias.name} - {bias.severity}
-                </div>
-              ))}
-            </div>
-
-            <div 
-              className="p-6 rounded-lg shadow-md flex flex-col items-center justify-center"
-              style={{ backgroundColor: COLORS.neutral }}
-            >
-              <h2 className="text-2xl font-semibold mb-4" style={{ color: COLORS.darkBlue }}>
-                <ChartPie className="inline mr-2" /> Global Bias Index
-              </h2>
-              <div 
-                className="w-48 h-48 rounded-full flex items-center justify-center text-4xl font-bold"
-                style={{ 
-                  backgroundColor: globalBiasIndex > 70 ? 'rgba(255, 0, 0, 0.1)' : 
-                                   globalBiasIndex > 40 ? 'rgba(255, 165, 0, 0.1)' : 
-                                   'rgba(0, 255, 0, 0.1)',
-                  color: COLORS.darkBlue
-                }}
-              >
-                {globalBiasIndex}
-              </div>
-              <p className="mt-4 text-center" style={{ color: COLORS.mediumBlue }}>
-                Represents the current global cognitive bias trend
-              </p>
-            </div>
+        {input && (
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <TextMetrics metrics={textMetrics} />
           </div>
         )}
 
-        <footer className="mt-8 text-center">
-          <p style={{ color: COLORS.mediumBlue }}>
-            <Globe className="inline mr-2" />
-            Powered by Advanced Cognitive Analysis
+        {analysisResult && (
+          <div className="mt-8">
+            <BiasAnalysisResults analysisResult={analysisResult} />
+          </div>
+        )}
+
+        <div className="mt-8 text-center text-gray-600">
+          <p className="flex items-center justify-center">
+            <CheckCircle className="mr-2 h-5 w-5 text-green-500" />
+            Powered by Advanced Cognitive Bias Detection
           </p>
-        </footer>
+        </div>
       </div>
     </div>
   );
 };
 
-export default CognitiveBiasAnalyzer;
+export default App;
