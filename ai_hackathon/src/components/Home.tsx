@@ -1,9 +1,9 @@
+import { Button } from "@/components/ui/button"
 
-
-const Home = () => {
+export default function Home() {
   return (
-    <div>Home</div>
+    <div className=" w-full h-96 flex items-center justify-center">
+      <Button>Click me</Button>
+    </div>
   )
 }
-
-export default Home
