@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { InputSection } from '@/components/InputSection';
 import TextMetrics from '@/components/TextMetrics';
-import { BiasAnalysisResults } from '@/components/BiasAnalysisResults';
 import { useNavigate } from 'react-router-dom';
 
 // Mock bias detection service (replace with actual API)
@@ -19,7 +18,6 @@ const detectBiases = async (input: string, isUrl: boolean) => {
 
 const MainPage: React.FC = () => {
   const [input, setInput] = useState('');
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [inputType, setInputType] = useState<'url' | 'text'>('url');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -75,12 +73,6 @@ const MainPage: React.FC = () => {
         {input && (
           <div className="mt-4">
             <TextMetrics metrics={textMetrics} />
-          </div>
-        )}
-
-        {analysisResult && (
-          <div className="mt-8">
-            <BiasAnalysisResults analysisResult={analysisResult} />
           </div>
         )}
 

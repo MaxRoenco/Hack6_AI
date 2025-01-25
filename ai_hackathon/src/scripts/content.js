@@ -1,62 +1,88 @@
-// Create a method to inject and show the extension popup
-function injectExtensionPopup() {
-    // Create a modal container
-    const modal = document.createElement('div');
-    modal.style.position = 'fixed';
-    modal.style.top = '50%';
-    modal.style.left = '50%';
-    modal.style.transform = 'translate(-50%, -50%)';
-    modal.style.zIndex = '9999';
-    modal.style.width = '380px';
-    modal.style.maxHeight = '600px';
-    modal.style.backgroundColor = 'white';
-    modal.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-    modal.style.borderRadius = '8px';
-    modal.style.padding = '20px';
-    modal.style.overflow = 'auto';
-  
-    // Create close button
-    const closeButton = document.createElement('button');
-    closeButton.innerText = 'Close';
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '10px';
-    closeButton.style.right = '10px';
-    closeButton.onclick = () => modal.remove();
-  
-    // Create overlay to dim background
-    const overlay = document.createElement('div');
-    overlay.style.position = 'fixed';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
-    overlay.style.zIndex = '9998';
-  
-    // Inject bias analysis content (simplified version)
-    modal.innerHTML = `
-      <h2>Cognitive Bias Analysis</h2>
-      <div style="text-align: center; fontSize: 48px; color: red;">75</div>
-      <p>Potential cognitive biases detected in this content.</p>
-    `;
-  
-    modal.appendChild(closeButton);
+function createCognitiveBiasNotification(bias, sentence) {
+  // Create notification container
+  const notification = document.createElement('div');
+  notification.className = `
+    fixed right-4 top-4 z-[1000] w-96 bg-white 
+    border border-gray-200 rounded-lg shadow-lg 
+    transform transition-all duration-300 ease-in-out 
+    translate-x-0 opacity-100 p-4
+  `;
+
+  // Notification content
+  notification.innerHTML = `
+    <div class="flex justify-between items-start mb-3">
+      <div>
+        <h3 class="text-lg font-semibold text-red-600">Cognitive Bias Detected!</h3>
+        <p class="text-sm text-gray-600 mt-1">${bias}</p>
+      </div>
+      <button id="close-notification" class="text-gray-400 hover:text-gray-600">✕</button>
+    </div>
     
-    // Add overlay and modal to body
-    document.body.appendChild(overlay);
-    document.body.appendChild(modal);
-  
-    // Remove overlay when modal is closed
-    closeButton.addEventListener('click', () => {
-      overlay.remove();
-      modal.remove();
-    });
-  }
-  
-  // Listen for message to show extension
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'showExtension') {
-      injectExtensionPopup();
-      console.log('Extension triggered after 3 seconds');
+    <div class="mb-3">
+      <p class="text-sm text-gray-700 italic">"${sentence}"</p>
+    </div>
+    
+    <div class="flex justify-end">
+      <button id="expand-details" class="
+        text-sm text-blue-600 hover:text-blue-800 
+        transition-colors font-medium
+      ">
+        Explain Bias
+      </button>
+    </div>
+    
+    <div id="bias-details" class="hidden mt-3 pt-3 border-t border-gray-200">
+      <p class="text-sm text-gray-700"></p>
+    </div>
+  `;
+
+  // Bias database (expand as needed)
+  const biasDetails = {
+    'Confirmation Bias': 'The tendency to search for, interpret, and favor information that confirms existing beliefs.',
+    'Anchoring Bias': 'Relying too heavily on the first piece of information encountered when making decisions.',
+    'Availability Heuristic': 'Overestimating the likelihood of events based on how easily examples come to mind.'
+  };
+
+  // Close button functionality
+  const closeButton = notification.querySelector('#close-notification');
+  closeButton.addEventListener('click', () => {
+    notification.classList.add('translate-x-full', 'opacity-0');
+    setTimeout(() => document.body.removeChild(notification), 300);
+  });
+
+  // Expand details functionality
+  const expandButton = notification.querySelector('#expand-details');
+  const detailsContainer = notification.querySelector('#bias-details');
+  const detailsText = detailsContainer.querySelector('p');
+
+  expandButton.addEventListener('click', () => {
+    if (detailsContainer.classList.contains('hidden')) {
+      detailsText.textContent = biasDetails[bias] || 'No detailed explanation available.';
+      detailsContainer.classList.remove('hidden');
+      expandButton.textContent = 'Hide Details';
+    } else {
+      detailsContainer.classList.add('hidden');
+      expandButton.textContent = 'Explain Bias';
     }
   });
+
+  // Add to document
+  document.body.appendChild(notification);
+}
+
+// Chrome extension message listener
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'showExtension') {
+    const biases = [
+      'Confirmation Bias', 
+      'Anchoring Bias', 
+      'Availability Heuristic'
+    ];
+
+    const randomBias = biases[Math.floor(Math.random() * biases.length)];
+    createCognitiveBiasNotification(
+      randomBias, 
+      'This is an example sentence demonstrating a potential cognitive bias.'
+    );
+  }
+});
