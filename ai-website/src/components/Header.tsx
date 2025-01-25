@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Menu, X, Home, User, Settings } from 'lucide-react';
+import { Menu, X, Home, GraduationCap, Settings } from 'lucide-react';
 import { 
   NavigationMenu, 
   NavigationMenuList, 
   NavigationMenuItem, 
-  NavigationMenuTrigger, 
-  NavigationMenuContent 
+  // NavigationMenuTrigger, 
+  // NavigationMenuContent 
 } from '@/components/ui/navigation-menu';
 import { Button } from '@/components/ui/button';
 
@@ -19,9 +19,9 @@ const Header = () => {
       icon: <Home className="mr-2 h-4 w-4" /> 
     },
     { 
-      label: 'Profile', 
-      href: '/profile', 
-      icon: <User className="mr-2 h-4 w-4" /> 
+      label: 'Learn', 
+      href: '/learning', 
+      icon: <GraduationCap className="mr-2 h-4 w-4" /> 
     },
     { 
       label: 'Settings', 
@@ -75,10 +75,12 @@ const Header = () => {
                 <Button 
                   key={item.label} 
                   variant="ghost" 
-                  className="w-full justify-start"
+                  className='w-full flex flex-row items-center'
                 >
-                  {item.icon}
-                  {item.label}
+                  <a href={item.href} className="flex items-center w-full justify-start">
+                    {item.icon}
+                    {item.label}
+                  </a>
                 </Button>
               ))}
             </div>
