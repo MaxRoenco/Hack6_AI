@@ -89,7 +89,7 @@ const BiasAnalysis = () => {
   };
 
   return (
-    <Card className="w-[380px] mx-auto mt-10 shadow-2xl">
+    <Card className="w-[450px] mx-auto shadow-2xl">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">
           Cognitive Bias Analyzer
@@ -135,7 +135,7 @@ const BiasAnalysis = () => {
 
 const BiasDetails = () => {
   return (
-    <Card className="w-[500px] mx-auto mt-10 max-h-[600px]">
+    <Card className="w-[600px] mx-auto">
       <CardHeader>
         <CardTitle>Cognitive Bias Encyclopedia</CardTitle>
         <CardDescription>
@@ -144,33 +144,46 @@ const BiasDetails = () => {
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] w-full pr-4">
-          {details.map((bias, index) => (
-            <AlertDialog key={index}>
-              <AlertDialogTrigger asChild>
-                <div 
-                  className="mb-4 p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
-                >
-                  <h3 className="font-semibold text-lg">{bias.type}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {bias.description}
-                  </p>
-                </div>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{bias.type}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {bias.description}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Close</AlertDialogCancel>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ))}
+          <div className="space-y-4">
+            {details.map((bias, index) => (
+              <AlertDialog key={index}>
+                <AlertDialogTrigger asChild>
+                  <div 
+                    className="p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+                  >
+                    <h3 className="font-semibold text-lg">{bias.type}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {bias.description}
+                    </p>
+                  </div>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{bias.type}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {bias.description}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Close</AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ))}
+          </div>
         </ScrollArea>
       </CardContent>
+      <CardFooter>
+        <Button 
+          variant="outline" 
+          className="w-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300"
+          onClick={() => window.open('http://localhost:5173', '_blank')}
+        >
+          <span className="bg-gradient-to-r from-gray-700 to-black text-transparent bg-clip-text">
+            Explore Advanced Bias Analysis
+          </span>
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

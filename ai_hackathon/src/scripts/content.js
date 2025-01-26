@@ -1,3 +1,16 @@
+const biasScore = 72; // Example bias score value
+
+const getBiasStyle = () => {
+  if (biasScore > 70) {
+    return "background-color: red; color: white;";
+  }
+  if (biasScore > 40) {
+    return "background-color: yellow; color: black;";
+  }
+  return "background-color: green; color: white;";
+};
+
+
 function createCognitiveBiasNotification(bias, sentence) {
   const notification = document.createElement('div');
   notification.style.cssText = `
@@ -5,7 +18,7 @@ function createCognitiveBiasNotification(bias, sentence) {
     right: -400px;  /* Start off-screen */
     top: 16px;
     z-index: 99999;
-    width: 380px;
+    width: 500px;
     background: linear-gradient(135deg, #ffffff, #f4f4f4);
     border: 1px solid #e0e0e0;
     border-radius: 16px;
@@ -14,6 +27,36 @@ function createCognitiveBiasNotification(bias, sentence) {
     transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   `;
+
+  const buttonLinkStyle = `
+  text-decoration: none;
+  min-height: 60px;
+  width: 200px; 
+  background: #f0f2f5; 
+  border: 1px solid #e9ecef;
+  padding: 10px; 
+  border-radius: 8px; 
+  color: #333; 
+  font-weight: 700; 
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  text-align: center;
+  transition: all 0.2s ease;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  outline: none;
+  &:hover {
+    background: #e6e8eb;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+  }
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+`;
 
   notification.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -31,6 +74,18 @@ function createCognitiveBiasNotification(bias, sentence) {
         transition: transform 0.2s;
       ">✕</button>
     </div>
+
+    <div 
+    style="
+      text-align: center; 
+      font-size: 6rem; 
+      font-weight: 900; 
+      padding: 1rem; 
+      border-radius: 0.5rem; 
+      line-height: 1;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      " id="biasDiv">
+    </div>
     
     <div style="
       background: #f9fafb; 
@@ -44,19 +99,15 @@ function createCognitiveBiasNotification(bias, sentence) {
       "${sentence}"
     </div>
     
-    <button id="expand-btn" style="
-      width: 100%; 
-      background: #f0f2f5; 
-      border: 1px solid #e9ecef;
-      padding: 10px; 
-      border-radius: 8px; 
-      color: #333; 
-      font-weight: 500; 
-      cursor: pointer;
-      transition: all 0.2s;
-    ">
-      Learn More About This Bias
-    </button>
+    <div style="width: 100%; gap: 10px; display: flex; align-items:center; justify-content: center">
+      <button id="expand-btn" style="${buttonLinkStyle}">
+        Check more Detailes
+      </button>
+
+      <a href="http://localhost:5173" style="${buttonLinkStyle}">
+        Check Our Website
+      </a>
+    </div>
     
     <div id="details" style="display: none; margin-top: 15px; color: #667085; font-size: 14px;"></div>
   `;
@@ -70,6 +121,14 @@ function createCognitiveBiasNotification(bias, sentence) {
   const closeBtn = notification.querySelector('#close-btn');
   const expandBtn = notification.querySelector('#expand-btn');
   const detailsDiv = notification.querySelector('#details');
+  const biasDiv = notification.querySelector("#biasDiv");
+
+  // Ensure biasDiv exists before setting style
+  if (biasDiv) {
+    biasDiv.style.backgroundColor = biasScore > 70 ? 'red' : (biasScore > 40 ? 'yellow' : 'green');
+    biasDiv.style.color = biasScore > 40 ? 'black' : 'white';
+    biasDiv.textContent = biasScore;
+  }
 
   // Sliding in animation
   setTimeout(() => {
@@ -86,13 +145,14 @@ function createCognitiveBiasNotification(bias, sentence) {
       detailsDiv.textContent = biasDetails[bias] || 'No details available.';
       detailsDiv.style.display = 'block';
       expandBtn.textContent = 'Hide Details';
-      expandBtn.style.backgroundColor = '#e9ecef';
     } else {
       detailsDiv.style.display = 'none';
-      expandBtn.textContent = 'Learn More About This Bias';
-      expandBtn.style.backgroundColor = '#f0f2f5';
+      expandBtn.textContent = 'Check more Detailes';
     }
   });
+
+  // Removed the checkDetailsBtn event listener
+  // The link will now simply navigate to localhost:1573
 
   closeBtn.addEventListener('mouseover', (e) => {
     e.target.style.transform = 'rotate(90deg)';
@@ -104,7 +164,6 @@ function createCognitiveBiasNotification(bias, sentence) {
 
   document.body.appendChild(notification);
 }
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.action === 'showExtension') {
