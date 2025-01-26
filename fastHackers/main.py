@@ -127,7 +127,7 @@ async def analyze_bias(processed_text: List[Dict[str, Any]]) -> Dict[str, Any]:
         model="gpt-4",
         messages=[
             {"role": "system",
-             "content": "Analyze the text for bias and provide output in valid JSON format. Use proper escaping for quotes and special characters. Maintain original text language for 'text' and 'neutral_version' fields. Do NOT include sentences that have no 'bias_type', and do NOT forget to note the severity. Focus on these bias types: anchoring bias, attribution bias, confirmation bias, negativity bias, bandwagon bias, authority bias, framing effect, halo effect."},
+             "content": "Analyze the text for bias and provide output in valid JSON format. Use proper escaping for quotes and special characters. Maintain original text language for 'text' and 'neutral_version' fields. Do NOT include sentences that have no 'bias_type', and do NOT forget to note the severity. Focus on these bias types: anchoring bias, attribution bias, confirmation bias, negativity bias, bandwagon bias, authority bias, framing effect, halo effect. When dealing with data in ROMANIAN or RUSSIAN, look the paragraphs and all 'text' fields for biases, not based on the lists of sentences"},
             {"role": "user", "content": user_content}
         ],
         functions=[{"name": "analyze_bias", "parameters": json_schema}],
