@@ -3,6 +3,7 @@ import { CheckCircle } from 'lucide-react';
 import { InputSection } from '@/components/InputSection';
 import TextMetrics from '@/components/TextMetrics';
 import { useNavigate } from 'react-router-dom';
+import TestimonialsSection from '@/components/TestimonialsSection';
 
 // Mock bias detection service (replace with actual API)
 const detectBiases = async (input: string, isUrl: boolean) => {
@@ -83,6 +84,7 @@ const MainPage: React.FC = () => {
           </p>
         </div>
       </div>
+      <TestimonialsSection/>
     </div>
   );
 };
