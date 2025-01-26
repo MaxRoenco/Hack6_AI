@@ -7,13 +7,21 @@ import json
 import os
 from dotenv import load_dotenv
 import openai
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Any
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = FastAPI()
-
+# Add CORS middleware configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 # ========== Pydantic Models ==========
 class DataRequest(BaseModel):
