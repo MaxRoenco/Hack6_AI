@@ -31,6 +31,7 @@ class BiasAnalysisItem(BaseModel):
 class BiasAnalysisResponse(BaseModel):
     bias_intensity: str
     bias_types_amount: str
+    bias_score: float
     sentences: List[BiasAnalysisItem]
 
 
@@ -100,6 +101,7 @@ async def analyze_bias(processed_text: List[Dict[str, Any]]) -> Dict[str, Any]:
         "properties": {
             "bias_intensity": {"type": "string"},
             "bias_types_amount": {"type": "string"},
+            "bias_score" : {"type": "number"},
             "sentences": {
                 "type": "array",
                 "items": {
@@ -115,19 +117,29 @@ async def analyze_bias(processed_text: List[Dict[str, Any]]) -> Dict[str, Any]:
                 }
             }
         },
-        "required": ["bias_intensity", "bias_types_amount", "sentences"]
+        "required": ["bias_intensity", "bias_types_amount", "bias_score", "sentences"]
     }
 
-    user_content = "\n".join(
-        f"Paragraph {idx + 1}:\n" + "\n".join(f"{sent['text']}" for sent in para['sentences'])
-        for idx, para in enumerate(processed_text)
-    )
+    user_content = []
+    for idx, para in enumerate(processed_text):
+        # Start with paragraph header
+        entry = f"Paragraph {idx + 1}:\n"
+
+        # Add sentences if they exist
+        if para['sentences']:
+            entry += "Sentences:\n" + "\n".join(f"- {sent['text']}" for sent in para['sentences'])
+        # Always add full paragraph text
+        entry += f"\nFull Paragraph Text:\n{para['text']}"
+
+        user_content.append(entry)
+
+    user_content = "\n\n".join(user_content)
 
     response = await openai.ChatCompletion.acreate(
         model="gpt-4",
         messages=[
             {"role": "system",
-             "content": "Analyze the text for bias and provide output in valid JSON format. Use proper escaping for quotes and special characters. Maintain original text language for 'text' and 'neutral_version' fields. Do NOT include sentences that have no 'bias_type', and do NOT forget to note the severity. Focus on these bias types: anchoring bias, attribution bias, confirmation bias, negativity bias, bandwagon bias, authority bias, framing effect, halo effect. When dealing with data in ROMANIAN or RUSSIAN, look the paragraphs and all 'text' fields for biases, not based on the lists of sentences"},
+             "content": "Analyze the text for bias and provide output in valid JSON format. Use proper escaping for quotes and special characters. Maintain original text language for 'text' and 'neutral_version' fields. Do NOT include sentences that have no 'bias_type', and do NOT forget to note the severity.  Focus on these bias types, the score of each sentence attributes to the bias type as they are shown here: anchoring bias, confirmation bias, negativity bias, bandwagon bias, authority bias, framing effect, attribution bias, halo effect. When dealing with data in ROMANIAN or RUSSIAN, look the paragraphs and all 'text' fields for biases, not based on the lists of sentences. Make sure you are a bit more severe with attributing a 'bias_score' and a 'bias_intensity'. The bias score is from 0 to 1 and it should NOT be related to the amount of bias types. 'bias_score' for 'low' should be around 0.3-0.45."},
             {"role": "user", "content": user_content}
         ],
         functions=[{"name": "analyze_bias", "parameters": json_schema}],
@@ -143,33 +155,37 @@ async def analyze_bias(processed_text: List[Dict[str, Any]]) -> Dict[str, Any]:
 # ========== API Endpoint ==========
 @app.post("/api/process", response_model=ProcessResponse)
 async def process(data_request: DataRequest):
-    url = data_request.data
+    input_data = data_request.data
+    parsed_url = urlparse(input_data)
 
-    parsed_url = urlparse(url)
-    if not parsed_url.scheme or not parsed_url.netloc:
-        raise HTTPException(status_code=400, detail="Invalid URL")
-
-    payload = {
-        "content": "EMPTY",
-        "contentUri": url,
-        "language": "eng"
-    }
-
-    response = requests.post(
-        "https://app.trustservista.com/api/rest/v2/text",
-        json=payload,
-        headers={
-            "X-TRUS-API-Key": ZETTA_API_KEY,
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Cache-Control": "no-cache"
+    # Determine if input is a URL or text
+    if parsed_url.scheme and parsed_url.netloc:
+        # Handle URL input
+        payload = {
+            "content": "EMPTY",
+            "contentUri": input_data,
+            "language": "eng"
         }
-    )
 
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="Error processing the URL")
+        response = requests.post(
+            "https://app.trustservista.com/api/rest/v2/text",
+            json=payload,
+            headers={
+                "X-TRUS-API-Key": ZETTA_API_KEY,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Cache-Control": "no-cache"
+            }
+        )
 
-    text = response.json().get("text", "")
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="Error processing the URL")
+
+        text = response.json().get("text", "")
+    else:
+        # Handle raw text input
+        text = input_data
+
     processed_text = splitter(text)
 
     try:
