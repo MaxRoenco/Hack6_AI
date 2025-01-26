@@ -1,97 +1,140 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import BiasAnalysisSection from '@/components/BiasAnalysisSection';
 
 // Bias color and description mapping
-const BIAS_DETAILS = {
-  'Confirmation Bias': {
+const BIAS_DETAILS: Record<string, { color: string; description: string }> = {
+  'bandwagon_effect': {
+    color: 'bg-purple-100',
+    description: 'The tendency to do something because many other people are doing it.'
+  },
+  'availability_heuristic': {
+    color: 'bg-blue-100',
+    description: 'Tendency to overestimate the likelihood of events with greater "availability" in memory.'
+  },
+  'false_dichotomy': {
     color: 'bg-red-100',
-    description: 'The tendency to search for, interpret, favor, and recall information in a way that confirms or supports one\'s prior beliefs or values.'
-  },
-  'Anchoring Bias': {
-    color: 'bg-yellow-100',
-    description: 'The tendency to rely too heavily on the first piece of information encountered when making decisions.'
-  },
-  'Availability Heuristic': {
-    color: 'bg-blue-100', 
-    description: 'The tendency to overestimate the likelihood of events with greater "availability" in memory, which is often influenced by how unusual or emotionally charged they are.'
+    description: 'Presenting only two options while ignoring alternative possibilities.'
   }
 };
 
+interface BiasAnalysisResult {
+  bias_intensity: number;
+  biased_words_count: number;
+  bias_types: number;
+  sentences: {
+    text: string;
+    bias_type: string;
+    severity: number;
+    neutral_version: string;
+    reason: string;
+  }[];
+}
+
 const BiasResultsPage: React.FC = () => {
-  const location = useLocation();
-  const { text, analysisResult } = location.state || {};
   const [neutralizedSentences, setNeutralizedSentences] = useState<Set<number>>(new Set());
+  const [currentSentences, setCurrentSentences] = useState<string[]>([]);
+
+  // Hardcoded example result matching the provided JSON structure
+  const analysisResult: BiasAnalysisResult = {
+    bias_intensity: 0.65,
+    biased_words_count: 24,
+    bias_types: 3,
+    sentences: [
+      {
+        text: "Everyone knows that eating junk food every day will make you fat.",
+        bias_type: "bandwagon_effect",
+        severity: 0.7,
+        neutral_version: "Eating junk food every day can lead to weight gain.",
+        reason: "This statement appeals to the idea that something is true simply because it is a commonly held belief. It lacks individual analysis of scientific evidence."
+      },
+      {
+        text: "Just look at all those celebrities who have gained weight after they retired.",
+        bias_type: "availability_heuristic",
+        severity: 0.6,
+        neutral_version: "Some celebrities have gained weight after they retired.",
+        reason: "This statement appeals to the idea that something is true simply because it is a commonly held belief. It lacks individual analysis of scientific evidence."
+      },
+      {
+        text: "If you care about your health, you'll avoid junk food entirely.",
+        bias_type: "false_dichotomy",
+        severity: 0.5,
+        neutral_version: "If you care about your health, you may want to limit your consumption of junk food.",
+        reason: "This sentence presents only two options—either care about your health or eat junk food—while ignoring other possibilities, such as moderation."
+      },
+      {
+        text: "Fruits and vegetables are proven to be beneficial for you.",
+        bias_type: "none",
+        severity: 0,
+        neutral_version: "",
+        reason: ""
+      },
+    ]
+  };
+
+  // Initialize current sentences on first render
+  React.useEffect(() => {
+    setCurrentSentences(analysisResult.sentences.map(s => s.text));
+  }, []);
+
+  const dashedTextToCapitalized = (text: string) => text.split("_").map(w => w.slice(0,1).toUpperCase()+w.slice(1)).join(" ");
 
   // Function to highlight sentences with hover card
   const highlightText = () => {
-    if (!text) return <p>No text submitted</p>;
-
-    // Split text into sentences 
-    const sentences = text.split(/[.!?]+/).filter((sentence: string) => sentence.trim());
-
-    return sentences.map((sentence: string, index: number) => {
+    return analysisResult.sentences.map((sentence, index) => {
       // Check if this sentence has been neutralized
       if (neutralizedSentences.has(index)) {
-        return <span key={index} className="mr-1">NEUTRALIZED</span>;
+        return <span key={index} className="mr-1">{sentence.neutral_version || sentence.text.trim()}</span>;
       }
 
-      // Randomly decide whether to highlight this sentence
-      const shouldHighlight = Math.random() > 0.5;
-      
-      if (shouldHighlight && analysisResult?.biasTypes) {
-        // Pick a random bias type for highlighting
-        const randomBias = analysisResult.biasTypes[
-          Math.floor(Math.random() * analysisResult.biasTypes.length)
-        ];
-        
-        const biasDetail = BIAS_DETAILS[randomBias.name as keyof typeof BIAS_DETAILS] || 
-          { color: 'bg-gray-100', description: 'Unknown Bias' };
-        
-        return (
-          <HoverCard key={index}>
-            <HoverCardTrigger>
-              <span 
-                className={`${biasDetail.color} rounded-md px-1 mr-1 cursor-help`}
-              >
-                {sentence.trim()}
-              </span>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-80">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{randomBias.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {biasDetail.description}
-                  </p>
-                  <div className="flex justify-between mb-2">
-                    <span>Severity:</span>
-                    <span className="font-bold">
-                      {(randomBias.severity * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    onClick={() => {
-                      setNeutralizedSentences(prev => new Set(prev).add(index));
-                    }}
-                  >
-                    Neutralize
-                  </Button>
-                </CardContent>
-              </Card>
-            </HoverCardContent>
-          </HoverCard>
-        );
+      // Skip sentences with no bias
+      if (sentence.bias_type === 'none') {
+        return <span key={index} className="mr-1">{sentence.text.trim()}</span>;
       }
+
+      const biasDetail = BIAS_DETAILS[sentence.bias_type] || 
+        { color: 'bg-gray-100', description: 'Unknown Bias' };
       
-      return <span key={index} className="mr-1">{sentence.trim()}</span>;
+      return (
+        <HoverCard key={index}>
+          <HoverCardTrigger>
+            <span 
+              className={`${biasDetail.color} rounded-md px-1 mr-1 cursor-help`}
+              style={{ opacity: sentence.severity + 0.3 }}
+            >
+              {sentence.text.trim()}
+            </span>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div>
+              <h3 className="font-bold text-lg mb-2">{dashedTextToCapitalized(sentence.bias_type)}</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                {biasDetail.description}
+              </p>
+              <p className="text-sm mb-2">{sentence.reason}</p>
+              <div className="flex justify-between items-center">
+                <span>Severity:</span>
+                <span className="font-bold">
+                  {(sentence.severity * 100).toFixed(0)}%
+                </span>
+              </div>
+              {sentence.neutral_version && (
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="mt-2 w-full"
+                  onClick={() => {
+                    setNeutralizedSentences(prev => new Set(prev).add(index));
+                  }}
+                >
+                  Neutralize
+                </Button>
+              )}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
     });
   };
 
@@ -104,11 +147,10 @@ const BiasResultsPage: React.FC = () => {
           {highlightText()}
         </div>
       </div>
-        <br />
+      <br />
       {analysisResult && (
         <BiasAnalysisSection analysisResult={analysisResult} />
       )}
-      
     </div>
   );
 };

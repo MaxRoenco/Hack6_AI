@@ -1,0 +1,35 @@
+{
+    "bias_intensity": "<percentage>",
+    "biased_words_count": "<number>",
+    "bias_types": "<number>",
+    "sentences": [
+        {
+            "text": "Everyone knows that eating junk food every day will make you fat.",
+            "bias_type": "bandwagon_effect",
+            "severity": "<number>",
+            "neutral_version": "Eating junk food every day can lead to weight gain.",
+            "reason": "This statement appeals to the idea that something is true simply because it is a commonly held belief. It lacks individual analysis of scientific evidence."
+        },
+        {
+            "text": "Just look at all those celebrities who have gained weight after they retired.",
+            "bias_type": "availability_heuristic",
+            "severity": "<number>",
+            "neutral_version": "Some celebrities have gained weight after they retired.",
+            "reason": "This statement appeals to the idea that something is true simply because it is a commonly held belief. It lacks individual analysis of scientific evidence."
+        },
+        {
+            "text": "If you care about your health, you’ll avoid junk food entirely.",
+            "bias_type": "false_dichotomy",
+            "severity": "<number>",
+            "neutral_version": "If you care about your health, you may want to limit your consumption of junk food.",
+            "reason": "This sentence presents only two options—either care about your health or eat junk food—while ignoring other possibilities, such as moderation."
+        },
+        {
+            "text": "Fruits and vegetables are proven to be beneficial for you.",
+            "bias_type": "none",
+            "severity": "<number>",
+            "neutral_version": "",
+            "reason": ""
+        }
+    ]
+}
